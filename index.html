@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Darkroad – Versione 1.6.1</title>
+<title>Darkroad – Versione 1.7</title>
 
 <style>
 html, body {
@@ -51,22 +51,29 @@ html, body {
     left: 50%;
     max-width: 80vw;
     max-height: 80vh;
-    transform: translate(-50%, -50%);
-    transition: transform 2s cubic-bezier(.4,0,.2,1);
+    transform: translate(-50%, -50%) scale(1);
+    transition:
+        transform 2s cubic-bezier(.4,0,.2,1),
+        box-shadow 2s ease;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.45);
 }
 
 /* POSIZIONI */
-.from-left   { transform: translate(-150%, -50%); }
-.from-right  { transform: translate(50%, -50%); }
-.from-top    { transform: translate(-50%, -150%); }
-.from-bottom { transform: translate(-50%, 50%); }
+.from-left   { transform: translate(-150%, -50%) scale(1); }
+.from-right  { transform: translate(50%, -50%) scale(1); }
+.from-top    { transform: translate(-50%, -150%) scale(1); }
+.from-bottom { transform: translate(-50%, 50%) scale(1); }
 
-.center { transform: translate(-50%, -50%); }
+/* CENTRO + MICRO-ZOOM */
+.center {
+    transform: translate(-50%, -50%) scale(1.035);
+}
 
-.to-left   { transform: translate(-200%, -50%); }
-.to-right  { transform: translate(100%, -50%); }
-.to-top    { transform: translate(-50%, -200%); }
-.to-bottom { transform: translate(-50%, 100%); }
+/* USCITE */
+.to-left   { transform: translate(-200%, -50%) scale(1); }
+.to-right  { transform: translate(100%, -50%) scale(1); }
+.to-top    { transform: translate(-50%, -200%) scale(1); }
+.to-bottom { transform: translate(-50%, 100%) scale(1); }
 
 /* UI */
 #version-label {
@@ -91,6 +98,24 @@ html, body {
     font-size: 13px;
     cursor: pointer;
 }
+
+/* RIASCOLTA */
+#replay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 48px;
+    letter-spacing: 4px;
+    cursor: pointer;
+}
+#replay:hover {
+    background: rgba(0,0,0,0.7);
+}
 </style>
 </head>
 
@@ -106,7 +131,9 @@ html, body {
 <div id="image-layer"></div>
 
 <button id="music-toggle">Pausa musica</button>
-<div id="version-label">Versione 1.6.1</div>
+<div id="version-label">Versione 1.7</div>
+
+<div id="replay">RIASCOLTA</div>
 
 <script>
 const startScreen = document.getElementById("start-screen");
@@ -114,6 +141,9 @@ const video = document.getElementById("bg-video");
 const music = document.getElementById("bg-music");
 const layer = document.getElementById("image-layer");
 const musicBtn = document.getElementById("music-toggle");
+const replay = document.getElementById("replay");
+
+let stopped = false;
 
 /* VIDEO */
 const videos = ["video.mp4","video2.mp4","video3.mp4","video4.mp4","video5.mp4"];
@@ -133,7 +163,7 @@ const directions = [
     { enter: "from-bottom", exit: "to-top"    }
 ];
 
-/* TIMELINE (+1s GIÀ APPLICATO) */
+/* TIMELINE */
 const timeline = [
     { src: "intro.png", center: 6 },
     { src: "001.png", center: 21 },
@@ -197,36 +227,31 @@ function startTimeline() {
         const exitTime = next ? (next.center - 2) * 1000 : null;
         const removeTime = next ? next.center * 1000 : (item.center + 2) * 1000;
 
-        /* CREAZIONE + ENTRATA */
         setTimeout(() => {
+            if (stopped) return;
             img = document.createElement("img");
             img.src = item.src;
             img.className = `scene-image ${dir.enter}`;
             layer.appendChild(img);
-
-            // forza layout
             img.getBoundingClientRect();
-
             img.classList.add("center");
         }, enterTime);
 
-        /* USCITA */
         if (exitTime !== null) {
             setTimeout(() => {
-                if (!img) return;
+                if (!img || stopped) return;
                 img.classList.remove("center");
                 img.classList.add(dir.exit);
             }, exitTime);
         }
 
-        /* RIMOZIONE */
         setTimeout(() => {
             if (img) img.remove();
         }, removeTime);
     });
 }
 
-/* PAUSA MUSICA */
+/* MUSICA */
 musicBtn.onclick = () => {
     if (music.paused) {
         music.play();
@@ -236,6 +261,16 @@ musicBtn.onclick = () => {
         musicBtn.textContent = "Riprendi musica";
     }
 };
+
+/* FINE BRANO */
+music.onended = () => {
+    stopped = true;
+    video.pause();
+    replay.style.display = "flex";
+};
+
+/* RIASCOLTA */
+replay.onclick = () => location.reload();
 </script>
 
 </body>
