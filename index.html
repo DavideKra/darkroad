@@ -15,28 +15,40 @@ html, body {
     background: black;
 }
 
-/* VIDEO DI SFONDO */
-#bg-video {
+/* CONTAINER VIDEO */
+#video-container {
     position: fixed;
+    inset: 0;
+    z-index: -2;
+}
+
+/* VIDEO LAYERS */
+.video-layer {
+    position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: -2;
-    display: none;
+    opacity: 0;
+    transition: opacity 2s linear;
 }
 
-/* SCHERMATA INIZIALE */
+/* VIDEO ATTIVO */
+.video-layer.active {
+    opacity: 1;
+}
+
+/* START */
 #start-screen {
     position: fixed;
     inset: 0;
-    background: url("000.png") center center / cover no-repeat;
+    background: url("000.png") center / cover no-repeat;
     z-index: 10;
     cursor: pointer;
     transition: opacity 1s ease;
 }
 
-/* IMMAGINE DOPO 20s */
+/* OVERLAY */
 #overlay-image {
     position: fixed;
     top: 50%;
@@ -52,27 +64,27 @@ html, body {
 
 <body>
 
-<!-- VIDEO -->
-<video id="bg-video" muted playsinline></video>
+<div id="video-container">
+    <video id="videoA" class="video-layer" muted playsinline></video>
+    <video id="videoB" class="video-layer" muted playsinline></video>
+</div>
 
-<!-- MUSICA -->
 <audio id="bg-music">
     <source src="Dark Road.mp3" type="audio/mpeg">
 </audio>
 
-<!-- START -->
 <div id="start-screen"></div>
 
-<!-- OVERLAY -->
-<img id="overlay-image" src="001.png" alt="overlay">
+<img id="overlay-image" src="001.png">
 
 <script>
 const startScreen = document.getElementById("start-screen");
-const video = document.getElementById("bg-video");
 const music = document.getElementById("bg-music");
 const overlayImage = document.getElementById("overlay-image");
 
-/* LISTA VIDEO */
+const videoA = document.getElementById("videoA");
+const videoB = document.getElementById("videoB");
+
 const videos = [
     "video.mp4",
     "video2.mp4",
@@ -83,6 +95,9 @@ const videos = [
 
 let playlist = [];
 let index = 0;
+let current = videoA;
+let next = videoB;
+let fading = false;
 
 /* SHUFFLE */
 function shuffle(arr) {
@@ -93,42 +108,60 @@ function shuffle(arr) {
     return arr;
 }
 
-/* AVVIO PLAYLIST */
 function startPlaylist() {
     playlist = shuffle([...videos]);
     index = 0;
-    playCurrent();
+    playVideo(current, playlist[index], true);
 }
 
-function playCurrent() {
-    video.src = playlist[index];
-    video.load();
-    video.play();
+function playVideo(player, src, activate = false) {
+    player.src = src;
+    player.load();
+    player.play();
+    if (activate) player.classList.add("active");
 }
 
-/* CAMBIO VIDEO */
-video.addEventListener("ended", () => {
+/* MONITOR TEMPO */
+function watchVideo(player) {
+    player.ontimeupdate = () => {
+        if (!fading && player.duration - player.currentTime <= 2) {
+            fading = true;
+            startCrossfade();
+        }
+    };
+}
+
+function startCrossfade() {
     index++;
-    if (index >= playlist.length) {
-        startPlaylist();
-    } else {
-        playCurrent();
-    }
-});
 
-/* CLICK INIZIALE */
+    if (index >= playlist.length) {
+        playlist = shuffle([...playlist]);
+        index = 0;
+    }
+
+    playVideo(next, playlist[index]);
+    next.classList.add("active");
+    current.classList.remove("active");
+
+    setTimeout(() => {
+        current.pause();
+        current.currentTime = 0;
+
+        // swap
+        [current, next] = [next, current];
+        fading = false;
+        watchVideo(current);
+    }, 2000);
+}
+
 startScreen.addEventListener("click", () => {
     startScreen.style.pointerEvents = "none";
-
-    video.style.display = "block";
-    startPlaylist();
+    startScreen.style.opacity = "0";
+    setTimeout(() => startScreen.style.display = "none", 1000);
 
     music.play();
-
-    startScreen.style.opacity = "0";
-    setTimeout(() => {
-        startScreen.style.display = "none";
-    }, 1000);
+    startPlaylist();
+    watchVideo(current);
 
     setTimeout(() => {
         overlayImage.style.display = "block";
