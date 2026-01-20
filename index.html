@@ -12,7 +12,6 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: black;
     font-family: Arial, sans-serif;
 }
 
@@ -23,7 +22,7 @@ html, body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: -1;
+    z-index: 0;              /* ⚠️ NON NEGATIVO */
     background: black;
 }
 
@@ -37,17 +36,6 @@ html, body {
     transition: opacity 1s ease;
 }
 
-/* ETICHETTA VERSIONE */
-#version-label {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    color: white;
-    font-size: 14px;
-    opacity: 0.7;
-    z-index: 20;
-}
-
 /* OVERLAY IMMAGINE */
 #overlay-image {
     position: fixed;
@@ -59,27 +47,33 @@ html, body {
     display: none;
     z-index: 5;
 }
+
+/* LABEL VERSIONE */
+#version-label {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    color: white;
+    font-size: 14px;
+    opacity: 0.8;
+    z-index: 20;
+}
 </style>
 </head>
 
 <body>
 
-<!-- VIDEO -->
 <video id="bg-video" muted playsinline></video>
 
-<!-- MUSICA -->
 <audio id="bg-music">
     <source src="Dark Road.mp3" type="audio/mpeg">
 </audio>
 
-<!-- START -->
 <div id="start-screen"></div>
 
-<!-- OVERLAY -->
 <img id="overlay-image" src="001.png">
 
-<!-- VERSIONE -->
-<div id="version-label">Versione 1</div>
+<div id="version-label">Versione 1.1</div>
 
 <script>
 const startScreen = document.getElementById("start-screen");
@@ -100,7 +94,7 @@ let index = Math.floor(Math.random() * videos.length);
 function playVideo() {
     video.src = videos[index];
     video.load();
-    video.play();
+    video.play().catch(err => console.log(err));
 }
 
 video.addEventListener("ended", () => {
@@ -113,8 +107,8 @@ startScreen.addEventListener("click", () => {
     startScreen.style.opacity = "0";
     setTimeout(() => startScreen.style.display = "none", 1000);
 
-    music.play();
     playVideo();
+    music.play();
 
     setTimeout(() => {
         overlayImage.style.display = "block";
