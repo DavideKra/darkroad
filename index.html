@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Darkroad – Versione 1.5</title>
+<title>Darkroad – Versione 1.6.1</title>
 
 <style>
 html, body {
@@ -44,34 +44,29 @@ html, body {
     pointer-events: none;
 }
 
-/* IMMAGINI — SEMPRE SOLIDE */
+/* IMMAGINI FISICHE */
 .scene-image {
     position: absolute;
     top: 50%;
     left: 50%;
     max-width: 80vw;
     max-height: 80vh;
-    opacity: 1;
     transform: translate(-50%, -50%);
     transition: transform 2s cubic-bezier(.4,0,.2,1);
 }
 
-/* ENTRATE — FUORI SCHERMO */
-.enter-left   { transform: translate(-150%, -50%); }
-.enter-right  { transform: translate(50%, -50%); }
-.enter-top    { transform: translate(-50%, -150%); }
-.enter-bottom { transform: translate(-50%, 50%); }
+/* POSIZIONI */
+.from-left   { transform: translate(-150%, -50%); }
+.from-right  { transform: translate(50%, -50%); }
+.from-top    { transform: translate(-50%, -150%); }
+.from-bottom { transform: translate(-50%, 50%); }
 
-/* CENTRO */
-.center {
-    transform: translate(-50%, -50%);
-}
+.center { transform: translate(-50%, -50%); }
 
-/* USCITE — FUORI SCHERMO */
-.exit-left   { transform: translate(-200%, -50%); }
-.exit-right  { transform: translate(100%, -50%); }
-.exit-top    { transform: translate(-50%, -200%); }
-.exit-bottom { transform: translate(-50%, 100%); }
+.to-left   { transform: translate(-200%, -50%); }
+.to-right  { transform: translate(100%, -50%); }
+.to-top    { transform: translate(-50%, -200%); }
+.to-bottom { transform: translate(-50%, 100%); }
 
 /* UI */
 #version-label {
@@ -111,7 +106,7 @@ html, body {
 <div id="image-layer"></div>
 
 <button id="music-toggle">Pausa musica</button>
-<div id="version-label">Versione 1.5</div>
+<div id="version-label">Versione 1.6.1</div>
 
 <script>
 const startScreen = document.getElementById("start-screen");
@@ -123,106 +118,111 @@ const musicBtn = document.getElementById("music-toggle");
 /* VIDEO */
 const videos = ["video.mp4","video2.mp4","video3.mp4","video4.mp4","video5.mp4"];
 let vIndex = Math.floor(Math.random() * videos.length);
-
-function playVideo() {
-    video.src = videos[vIndex];
-    video.play();
-}
+video.src = videos[vIndex];
 video.onended = () => {
     vIndex = (vIndex + 1) % videos.length;
-    playVideo();
+    video.src = videos[vIndex];
+    video.play();
 };
 
-/* ANIMAZIONI (ENTRATA = USCITA COERENTE) */
-const animations = [
-    { enter: "enter-left",   exit: "exit-right"  },
-    { enter: "enter-right",  exit: "exit-left"   },
-    { enter: "enter-top",    exit: "exit-bottom" },
-    { enter: "enter-bottom", exit: "exit-top"    }
+/* DIREZIONI */
+const directions = [
+    { enter: "from-left",   exit: "to-right"  },
+    { enter: "from-right",  exit: "to-left"   },
+    { enter: "from-top",    exit: "to-bottom" },
+    { enter: "from-bottom", exit: "to-top"    }
 ];
 
-/* TIMELINE */
+/* TIMELINE (+1s GIÀ APPLICATO) */
 const timeline = [
-    { src: "intro.png", center: 5 },
-    { src: "001.png", center: 20 },
-    { src: "002.png", center: 25 },
-    { src: "003.png", center: 30 },
-    { src: "004.png", center: 36 },
-    { src: "005.png", center: 41 },
-    { src: "006.png", center: 47 },
-    { src: "007.png", center: 51 },
-    { src: "008.png", center: 57 },
-    { src: "009.png", center: 62 },
-    { src: "010.png", center: 68 },
-    { src: "011.png", center: 73 },
-    { src: "012.png", center: 79 },
-    { src: "013.png", center: 83 },
-    { src: "014.png", center: 89 },
-    { src: "015.png", center: 94 },
-    { src: "016.png", center: 99 },
-    { src: "017.png", center: 105 },
-    { src: "018.png", center: 110 },
-    { src: "019.png", center: 115 },
-    { src: "020.png", center: 121 },
-    { src: "021.png", center: 127 },
-    { src: "022.png", center: 132 },
-    { src: "023.png", center: 137 },
-    { src: "024.png", center: 142 },
-    { src: "025.png", center: 148 },
-    { src: "026.png", center: 153 },
-    { src: "027.png", center: 159 },
-    { src: "028.png", center: 164 },
-    { src: "029.png", center: 169 },
-    { src: "030.png", center: 174 },
-    { src: "031.png", center: 179 },
-    { src: "032.png", center: 184 },
-    { src: "033.png", center: 190 },
-    { src: "034.png", center: 195 },
-    { src: "035.png", center: 201 },
-    { src: "036.png", center: 206 },
-    { src: "037.png", center: 212 },
-    { src: "038.png", center: 217 },
-    { src: "039.png", center: 223 },
-    { src: "040.png", center: 228 }
+    { src: "intro.png", center: 6 },
+    { src: "001.png", center: 21 },
+    { src: "002.png", center: 26 },
+    { src: "003.png", center: 31 },
+    { src: "004.png", center: 37 },
+    { src: "005.png", center: 42 },
+    { src: "006.png", center: 48 },
+    { src: "007.png", center: 52 },
+    { src: "008.png", center: 58 },
+    { src: "009.png", center: 63 },
+    { src: "010.png", center: 69 },
+    { src: "011.png", center: 74 },
+    { src: "012.png", center: 80 },
+    { src: "013.png", center: 84 },
+    { src: "014.png", center: 90 },
+    { src: "015.png", center: 95 },
+    { src: "016.png", center: 100 },
+    { src: "017.png", center: 106 },
+    { src: "018.png", center: 111 },
+    { src: "019.png", center: 116 },
+    { src: "020.png", center: 122 },
+    { src: "021.png", center: 128 },
+    { src: "022.png", center: 133 },
+    { src: "023.png", center: 138 },
+    { src: "024.png", center: 143 },
+    { src: "025.png", center: 149 },
+    { src: "026.png", center: 154 },
+    { src: "027.png", center: 160 },
+    { src: "028.png", center: 165 },
+    { src: "029.png", center: 170 },
+    { src: "030.png", center: 175 },
+    { src: "031.png", center: 180 },
+    { src: "032.png", center: 185 },
+    { src: "033.png", center: 191 },
+    { src: "034.png", center: 196 },
+    { src: "035.png", center: 202 },
+    { src: "036.png", center: 207 },
+    { src: "037.png", center: 213 },
+    { src: "038.png", center: 218 },
+    { src: "039.png", center: 224 },
+    { src: "040.png", center: 229 }
 ];
 
 /* AVVIO */
 startScreen.onclick = () => {
     startScreen.style.opacity = "0";
     setTimeout(() => startScreen.remove(), 1000);
-    playVideo();
+    video.play();
     music.play();
     startTimeline();
 };
 
 function startTimeline() {
     timeline.forEach((item, i) => {
-        const anim = animations[Math.floor(Math.random() * animations.length)];
-        const img = document.createElement("img");
-        img.src = item.src;
-        img.className = `scene-image ${anim.enter}`;
-        layer.appendChild(img);
+        const dir = directions[Math.floor(Math.random() * directions.length)];
+        let img = null;
 
         const enterTime = (item.center - 2) * 1000;
         const next = timeline[i + 1];
         const exitTime = next ? (next.center - 2) * 1000 : null;
+        const removeTime = next ? next.center * 1000 : (item.center + 2) * 1000;
 
-        /* ENTRATA */
+        /* CREAZIONE + ENTRATA */
         setTimeout(() => {
+            img = document.createElement("img");
+            img.src = item.src;
+            img.className = `scene-image ${dir.enter}`;
+            layer.appendChild(img);
+
+            // forza layout
+            img.getBoundingClientRect();
+
             img.classList.add("center");
         }, enterTime);
 
         /* USCITA */
         if (exitTime !== null) {
             setTimeout(() => {
+                if (!img) return;
                 img.classList.remove("center");
-                img.classList.add(anim.exit);
+                img.classList.add(dir.exit);
             }, exitTime);
         }
 
-        /* RIMOZIONE DOPO USCITA COMPLETA */
-        const removeAt = next ? next.center * 1000 : (item.center + 2) * 1000;
-        setTimeout(() => img.remove(), removeAt);
+        /* RIMOZIONE */
+        setTimeout(() => {
+            if (img) img.remove();
+        }, removeTime);
     });
 }
 
