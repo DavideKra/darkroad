@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Darkroad – Versione 1.4</title>
+<title>Darkroad – Versione 1.5</title>
 
 <style>
 html, body {
@@ -36,7 +36,7 @@ html, body {
     transition: opacity 1s ease;
 }
 
-/* IMMAGINI */
+/* LAYER IMMAGINI */
 #image-layer {
     position: fixed;
     inset: 0;
@@ -44,38 +44,34 @@ html, body {
     pointer-events: none;
 }
 
+/* IMMAGINI — SEMPRE SOLIDE */
 .scene-image {
     position: absolute;
     top: 50%;
     left: 50%;
     max-width: 80vw;
     max-height: 80vh;
-    opacity: 0;
+    opacity: 1;
     transform: translate(-50%, -50%);
-    transition:
-        transform 2s cubic-bezier(.4,0,.2,1),
-        opacity 2s cubic-bezier(.4,0,.2,1);
+    transition: transform 2s cubic-bezier(.4,0,.2,1);
 }
 
-/* ENTRATE */
-.enter-left   { transform: translate(-65%, -50%); }
-.enter-right  { transform: translate(-35%, -50%); }
-.enter-top    { transform: translate(-50%, -65%); }
-.enter-bottom { transform: translate(-50%, -35%); }
-.enter-fade   { }
+/* ENTRATE — FUORI SCHERMO */
+.enter-left   { transform: translate(-150%, -50%); }
+.enter-right  { transform: translate(50%, -50%); }
+.enter-top    { transform: translate(-50%, -150%); }
+.enter-bottom { transform: translate(-50%, 50%); }
 
 /* CENTRO */
 .center {
     transform: translate(-50%, -50%);
-    opacity: 1;
 }
 
-/* USCITE */
-.exit-left   { transform: translate(-120%, -50%); opacity: 0; }
-.exit-right  { transform: translate(20%, -50%); opacity: 0; }
-.exit-top    { transform: translate(-50%, -120%); opacity: 0; }
-.exit-bottom { transform: translate(-50%, 20%); opacity: 0; }
-.exit-fade   { opacity: 0; }
+/* USCITE — FUORI SCHERMO */
+.exit-left   { transform: translate(-200%, -50%); }
+.exit-right  { transform: translate(100%, -50%); }
+.exit-top    { transform: translate(-50%, -200%); }
+.exit-bottom { transform: translate(-50%, 100%); }
 
 /* UI */
 #version-label {
@@ -115,7 +111,7 @@ html, body {
 <div id="image-layer"></div>
 
 <button id="music-toggle">Pausa musica</button>
-<div id="version-label">Versione 1.4</div>
+<div id="version-label">Versione 1.5</div>
 
 <script>
 const startScreen = document.getElementById("start-screen");
@@ -127,6 +123,7 @@ const musicBtn = document.getElementById("music-toggle");
 /* VIDEO */
 const videos = ["video.mp4","video2.mp4","video3.mp4","video4.mp4","video5.mp4"];
 let vIndex = Math.floor(Math.random() * videos.length);
+
 function playVideo() {
     video.src = videos[vIndex];
     video.play();
@@ -136,13 +133,12 @@ video.onended = () => {
     playVideo();
 };
 
-/* ANIMAZIONI */
+/* ANIMAZIONI (ENTRATA = USCITA COERENTE) */
 const animations = [
     { enter: "enter-left",   exit: "exit-right"  },
     { enter: "enter-right",  exit: "exit-left"   },
     { enter: "enter-top",    exit: "exit-bottom" },
-    { enter: "enter-bottom", exit: "exit-top"    },
-    { enter: "enter-fade",   exit: "exit-fade"   }
+    { enter: "enter-bottom", exit: "exit-top"    }
 ];
 
 /* TIMELINE */
@@ -214,7 +210,6 @@ function startTimeline() {
         /* ENTRATA */
         setTimeout(() => {
             img.classList.add("center");
-            img.style.opacity = "1";
         }, enterTime);
 
         /* USCITA */
@@ -225,7 +220,7 @@ function startTimeline() {
             }, exitTime);
         }
 
-        /* RIMOZIONE */
+        /* RIMOZIONE DOPO USCITA COMPLETA */
         const removeAt = next ? next.center * 1000 : (item.center + 2) * 1000;
         setTimeout(() => img.remove(), removeAt);
     });
