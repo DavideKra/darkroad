@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Darkroad – Versione 1</title>
+<title>Darkroad – Versione 1.2</title>
 
 <style>
 html, body {
@@ -12,21 +12,21 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background: black;
     font-family: Arial, sans-serif;
 }
 
-/* VIDEO DI SFONDO */
+/* VIDEO */
 #bg-video {
     position: fixed;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: 0;              /* ⚠️ NON NEGATIVO */
-    background: black;
+    z-index: 0;
 }
 
-/* SCHERMATA INIZIALE */
+/* START */
 #start-screen {
     position: fixed;
     inset: 0;
@@ -36,26 +36,54 @@ html, body {
     transition: opacity 1s ease;
 }
 
-/* OVERLAY IMMAGINE */
-#overlay-image {
+/* CONTENITORE IMMAGINI */
+#image-layer {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 80vw;
-    max-height: 80vh;
-    display: none;
+    inset: 0;
     z-index: 5;
+    pointer-events: none;
 }
 
-/* LABEL VERSIONE */
+/* IMMAGINI */
+.scene-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    max-width: 80vw;
+    max-height: 80vh;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: transform 2s ease-in-out, opacity 2s ease-in-out;
+}
+
+/* ENTRATE */
+.enter-left   { transform: translate(-70%, -50%); opacity: 0; }
+.enter-right  { transform: translate(-30%, -50%); opacity: 0; }
+.enter-top    { transform: translate(-50%, -70%); opacity: 0; }
+.enter-bottom { transform: translate(-50%, -30%); opacity: 0; }
+.enter-fade   { transform: translate(-50%, -50%); opacity: 0; }
+
+/* CENTRO */
+.center {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+}
+
+/* USCITE */
+.exit-left   { transform: translate(-120%, -50%); opacity: 0; }
+.exit-right  { transform: translate(20%, -50%); opacity: 0; }
+.exit-top    { transform: translate(-50%, -120%); opacity: 0; }
+.exit-bottom { transform: translate(-50%, 20%); opacity: 0; }
+.exit-fade   { opacity: 0; }
+
+/* VERSIONE */
 #version-label {
     position: fixed;
     bottom: 20px;
     right: 20px;
     color: white;
     font-size: 14px;
-    opacity: 0.8;
+    opacity: 0.7;
     z-index: 20;
 }
 </style>
@@ -70,50 +98,123 @@ html, body {
 </audio>
 
 <div id="start-screen"></div>
+<div id="image-layer"></div>
 
-<img id="overlay-image" src="001.png">
-
-<div id="version-label">Versione 1.1</div>
+<div id="version-label">Versione 1.2</div>
 
 <script>
 const startScreen = document.getElementById("start-screen");
 const video = document.getElementById("bg-video");
 const music = document.getElementById("bg-music");
-const overlayImage = document.getElementById("overlay-image");
+const layer = document.getElementById("image-layer");
 
-const videos = [
-    "video.mp4",
-    "video2.mp4",
-    "video3.mp4",
-    "video4.mp4",
-    "video5.mp4"
-];
-
-let index = Math.floor(Math.random() * videos.length);
+const videos = ["video.mp4","video2.mp4","video3.mp4","video4.mp4","video5.mp4"];
+let vIndex = Math.floor(Math.random() * videos.length);
 
 function playVideo() {
-    video.src = videos[index];
-    video.load();
-    video.play().catch(err => console.log(err));
+    video.src = videos[vIndex];
+    video.play();
 }
-
-video.addEventListener("ended", () => {
-    index = (index + 1) % videos.length;
+video.onended = () => {
+    vIndex = (vIndex + 1) % videos.length;
     playVideo();
-});
+};
 
-startScreen.addEventListener("click", () => {
-    startScreen.style.pointerEvents = "none";
+/* ANIMAZIONI POSSIBILI */
+const animations = [
+    { enter: "enter-left",   exit: "exit-right"  },
+    { enter: "enter-right",  exit: "exit-left"   },
+    { enter: "enter-top",    exit: "exit-bottom" },
+    { enter: "enter-bottom", exit: "exit-top"    },
+    { enter: "enter-fade",   exit: "exit-fade"   }
+];
+
+/* TIMELINE IMMAGINI */
+const timeline = [
+    { src: "Intro.png", center: 5, exit: 16 },
+    { src: "001.png", center: 20 },
+    { src: "002.png", center: 25 },
+    { src: "003.png", center: 30 },
+    { src: "004.png", center: 36 },
+    { src: "005.png", center: 41 },
+    { src: "006.png", center: 47 },
+    { src: "007.png", center: 51 },
+    { src: "008.png", center: 57 },
+    { src: "009.png", center: 62 },
+    { src: "010.png", center: 68 },
+    { src: "011.png", center: 73 },
+    { src: "012.png", center: 79 },
+    { src: "013.png", center: 83 },
+    { src: "014.png", center: 89 },
+    { src: "015.png", center: 94 },
+    { src: "016.png", center: 99 },
+    { src: "017.png", center: 105 },
+    { src: "018.png", center: 110 },
+    { src: "019.png", center: 115 },
+    { src: "020.png", center: 121 },
+    { src: "021.png", center: 127 },
+    { src: "022.png", center: 132 },
+    { src: "023.png", center: 137 },
+    { src: "024.png", center: 142 },
+    { src: "025.png", center: 148 },
+    { src: "026.png", center: 153 },
+    { src: "027.png", center: 159 },
+    { src: "028.png", center: 164 },
+    { src: "029.png", center: 169 },
+    { src: "030.png", center: 174 },
+    { src: "031.png", center: 179 },
+    { src: "032.png", center: 184 },
+    { src: "033.png", center: 190 },
+    { src: "034.png", center: 195 },
+    { src: "035.png", center: 201 },
+    { src: "036.png", center: 206 },
+    { src: "037.png", center: 212 },
+    { src: "038.png", center: 217 },
+    { src: "039.png", center: 223 },
+    { src: "040.png", center: 228 }
+];
+
+let currentImg = null;
+
+/* AVVIO */
+startScreen.onclick = () => {
     startScreen.style.opacity = "0";
-    setTimeout(() => startScreen.style.display = "none", 1000);
-
+    setTimeout(() => startScreen.remove(), 1000);
     playVideo();
     music.play();
+    startTimeline();
+};
 
-    setTimeout(() => {
-        overlayImage.style.display = "block";
-    }, 20000);
-});
+function startTimeline() {
+    timeline.forEach((item, i) => {
+        const anim = animations[Math.floor(Math.random() * animations.length)];
+        const enterTime = (item.center - 2) * 1000;
+
+        setTimeout(() => {
+            const img = document.createElement("img");
+            img.src = item.src;
+            img.className = `scene-image ${anim.enter}`;
+            layer.appendChild(img);
+
+            requestAnimationFrame(() => img.classList.add("center"));
+
+            if (currentImg) {
+                currentImg.classList.add(anim.exit);
+                setTimeout(() => currentImg.remove(), 2000);
+            }
+
+            currentImg = img;
+        }, enterTime);
+
+        if (item.exit) {
+            setTimeout(() => {
+                if (currentImg) {
+                    currentImg.classList.add("exit-fade");
+                }
+            }, item.exit * 1000);
+        }
+    });
+}
 </script>
 
 </body>
