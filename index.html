@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Darkroad</title>
+<title>Darkroad – Versione 1</title>
 
 <style>
 html, body {
@@ -13,32 +13,21 @@ html, body {
     height: 100%;
     overflow: hidden;
     background: black;
+    font-family: Arial, sans-serif;
 }
 
-/* CONTAINER VIDEO */
-#video-container {
+/* VIDEO DI SFONDO */
+#bg-video {
     position: fixed;
-    inset: 0;
-    z-index: -2;
-}
-
-/* VIDEO LAYERS */
-.video-layer {
-    position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0;
-    transition: opacity 2s linear;
+    z-index: -1;
+    background: black;
 }
 
-/* VIDEO ATTIVO */
-.video-layer.active {
-    opacity: 1;
-}
-
-/* START */
+/* SCHERMATA INIZIALE */
 #start-screen {
     position: fixed;
     inset: 0;
@@ -48,7 +37,18 @@ html, body {
     transition: opacity 1s ease;
 }
 
-/* OVERLAY */
+/* ETICHETTA VERSIONE */
+#version-label {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    color: white;
+    font-size: 14px;
+    opacity: 0.7;
+    z-index: 20;
+}
+
+/* OVERLAY IMMAGINE */
 #overlay-image {
     position: fixed;
     top: 50%;
@@ -64,26 +64,28 @@ html, body {
 
 <body>
 
-<div id="video-container">
-    <video id="videoA" class="video-layer" muted playsinline></video>
-    <video id="videoB" class="video-layer" muted playsinline></video>
-</div>
+<!-- VIDEO -->
+<video id="bg-video" muted playsinline></video>
 
+<!-- MUSICA -->
 <audio id="bg-music">
     <source src="Dark Road.mp3" type="audio/mpeg">
 </audio>
 
+<!-- START -->
 <div id="start-screen"></div>
 
+<!-- OVERLAY -->
 <img id="overlay-image" src="001.png">
+
+<!-- VERSIONE -->
+<div id="version-label">Versione 1</div>
 
 <script>
 const startScreen = document.getElementById("start-screen");
+const video = document.getElementById("bg-video");
 const music = document.getElementById("bg-music");
 const overlayImage = document.getElementById("overlay-image");
-
-const videoA = document.getElementById("videoA");
-const videoB = document.getElementById("videoB");
 
 const videos = [
     "video.mp4",
@@ -93,66 +95,18 @@ const videos = [
     "video5.mp4"
 ];
 
-let playlist = [];
-let index = 0;
-let current = videoA;
-let next = videoB;
-let fading = false;
+let index = Math.floor(Math.random() * videos.length);
 
-/* SHUFFLE */
-function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
+function playVideo() {
+    video.src = videos[index];
+    video.load();
+    video.play();
 }
 
-function startPlaylist() {
-    playlist = shuffle([...videos]);
-    index = 0;
-    playVideo(current, playlist[index], true);
-}
-
-function playVideo(player, src, activate = false) {
-    player.src = src;
-    player.load();
-    player.play();
-    if (activate) player.classList.add("active");
-}
-
-/* MONITOR TEMPO */
-function watchVideo(player) {
-    player.ontimeupdate = () => {
-        if (!fading && player.duration - player.currentTime <= 2) {
-            fading = true;
-            startCrossfade();
-        }
-    };
-}
-
-function startCrossfade() {
-    index++;
-
-    if (index >= playlist.length) {
-        playlist = shuffle([...playlist]);
-        index = 0;
-    }
-
-    playVideo(next, playlist[index]);
-    next.classList.add("active");
-    current.classList.remove("active");
-
-    setTimeout(() => {
-        current.pause();
-        current.currentTime = 0;
-
-        // swap
-        [current, next] = [next, current];
-        fading = false;
-        watchVideo(current);
-    }, 2000);
-}
+video.addEventListener("ended", () => {
+    index = (index + 1) % videos.length;
+    playVideo();
+});
 
 startScreen.addEventListener("click", () => {
     startScreen.style.pointerEvents = "none";
@@ -160,8 +114,7 @@ startScreen.addEventListener("click", () => {
     setTimeout(() => startScreen.style.display = "none", 1000);
 
     music.play();
-    startPlaylist();
-    watchVideo(current);
+    playVideo();
 
     setTimeout(() => {
         overlayImage.style.display = "block";
