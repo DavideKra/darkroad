@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Darkroad – Versione 1.3</title>
+<title>Darkroad – Versione 1.4</title>
 
 <style>
 html, body {
@@ -36,7 +36,7 @@ html, body {
     transition: opacity 1s ease;
 }
 
-/* LAYER IMMAGINI */
+/* IMMAGINI */
 #image-layer {
     position: fixed;
     inset: 0;
@@ -44,7 +44,6 @@ html, body {
     pointer-events: none;
 }
 
-/* IMMAGINI */
 .scene-image {
     position: absolute;
     top: 50%;
@@ -58,7 +57,7 @@ html, body {
         opacity 2s cubic-bezier(.4,0,.2,1);
 }
 
-/* ENTRATE (lente, sobrie) */
+/* ENTRATE */
 .enter-left   { transform: translate(-65%, -50%); }
 .enter-right  { transform: translate(-35%, -50%); }
 .enter-top    { transform: translate(-50%, -65%); }
@@ -71,14 +70,14 @@ html, body {
     opacity: 1;
 }
 
-/* USCITE (sempre animate) */
+/* USCITE */
 .exit-left   { transform: translate(-120%, -50%); opacity: 0; }
 .exit-right  { transform: translate(20%, -50%); opacity: 0; }
 .exit-top    { transform: translate(-50%, -120%); opacity: 0; }
 .exit-bottom { transform: translate(-50%, 20%); opacity: 0; }
 .exit-fade   { opacity: 0; }
 
-/* VERSIONE */
+/* UI */
 #version-label {
     position: fixed;
     bottom: 20px;
@@ -89,7 +88,6 @@ html, body {
     z-index: 20;
 }
 
-/* PULSANTE MUSICA */
 #music-toggle {
     position: fixed;
     bottom: 20px;
@@ -101,9 +99,6 @@ html, body {
     padding: 8px 14px;
     font-size: 13px;
     cursor: pointer;
-}
-#music-toggle:hover {
-    background: rgba(255,255,255,0.1);
 }
 </style>
 </head>
@@ -120,7 +115,7 @@ html, body {
 <div id="image-layer"></div>
 
 <button id="music-toggle">Pausa musica</button>
-<div id="version-label">Versione 1.3</div>
+<div id="version-label">Versione 1.4</div>
 
 <script>
 const startScreen = document.getElementById("start-screen");
@@ -132,7 +127,6 @@ const musicBtn = document.getElementById("music-toggle");
 /* VIDEO */
 const videos = ["video.mp4","video2.mp4","video3.mp4","video4.mp4","video5.mp4"];
 let vIndex = Math.floor(Math.random() * videos.length);
-
 function playVideo() {
     video.src = videos[vIndex];
     video.play();
@@ -142,7 +136,7 @@ video.onended = () => {
     playVideo();
 };
 
-/* ANIMAZIONI SOBRIE */
+/* ANIMAZIONI */
 const animations = [
     { enter: "enter-left",   exit: "exit-right"  },
     { enter: "enter-right",  exit: "exit-left"   },
@@ -196,8 +190,6 @@ const timeline = [
     { src: "040.png", center: 228 }
 ];
 
-let currentImg = null;
-
 /* AVVIO */
 startScreen.onclick = () => {
     startScreen.style.opacity = "0";
@@ -207,31 +199,35 @@ startScreen.onclick = () => {
     startTimeline();
 };
 
-/* TIMELINE LOGICA */
 function startTimeline() {
-    timeline.forEach(item => {
+    timeline.forEach((item, i) => {
         const anim = animations[Math.floor(Math.random() * animations.length)];
+        const img = document.createElement("img");
+        img.src = item.src;
+        img.className = `scene-image ${anim.enter}`;
+        layer.appendChild(img);
+
         const enterTime = (item.center - 2) * 1000;
+        const next = timeline[i + 1];
+        const exitTime = next ? (next.center - 2) * 1000 : null;
 
+        /* ENTRATA */
         setTimeout(() => {
-            const img = document.createElement("img");
-            img.src = item.src;
-            img.className = `scene-image ${anim.enter}`;
-            layer.appendChild(img);
-
-            requestAnimationFrame(() => {
-                img.classList.add("center");
-                img.style.opacity = "1";
-            });
-
-            if (currentImg) {
-                currentImg.classList.remove("center");
-                currentImg.classList.add(anim.exit);
-                setTimeout(() => currentImg.remove(), 2000);
-            }
-
-            currentImg = img;
+            img.classList.add("center");
+            img.style.opacity = "1";
         }, enterTime);
+
+        /* USCITA */
+        if (exitTime !== null) {
+            setTimeout(() => {
+                img.classList.remove("center");
+                img.classList.add(anim.exit);
+            }, exitTime);
+        }
+
+        /* RIMOZIONE */
+        const removeAt = next ? next.center * 1000 : (item.center + 2) * 1000;
+        setTimeout(() => img.remove(), removeAt);
     });
 }
 
