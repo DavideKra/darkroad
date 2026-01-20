@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Darkroad – Versione 1.7</title>
+<title>Darkroad – Versione 1.7.1</title>
 
 <style>
 html, body {
@@ -44,7 +44,7 @@ html, body {
     pointer-events: none;
 }
 
-/* IMMAGINI FISICHE */
+/* IMMAGINI FISICHE (NO OMBRA, FILTRO LEGGERO) */
 .scene-image {
     position: absolute;
     top: 50%;
@@ -52,10 +52,13 @@ html, body {
     max-width: 80vw;
     max-height: 80vh;
     transform: translate(-50%, -50%) scale(1);
-    transition:
-        transform 2s cubic-bezier(.4,0,.2,1),
-        box-shadow 2s ease;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+    transition: transform 2s cubic-bezier(.4,0,.2,1);
+    
+    /* FILTRO "SPORCO" LEGGERISSIMO */
+    filter:
+        contrast(1.03)
+        saturate(0.96)
+        brightness(0.98);
 }
 
 /* POSIZIONI */
@@ -66,7 +69,7 @@ html, body {
 
 /* CENTRO + MICRO-ZOOM */
 .center {
-    transform: translate(-50%, -50%) scale(1.035);
+    transform: translate(-50%, -50%) scale(1.03);
 }
 
 /* USCITE */
@@ -131,7 +134,7 @@ html, body {
 <div id="image-layer"></div>
 
 <button id="music-toggle">Pausa musica</button>
-<div id="version-label">Versione 1.7</div>
+<div id="version-label">Versione 1.7.1</div>
 
 <div id="replay">RIASCOLTA</div>
 
